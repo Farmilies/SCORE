@@ -46,8 +46,7 @@ class SCOREBusinessLogic:
 
     def invoke_contract(self, log_func, id, params: dict, block=None):
         contract_key = params["key"]
-        contract_value = params["value"]
-        contract = json.loads(params["value"])
+        contract = params["value"]
         farmer_key = contract["farmer"]
 
         orginal_farmer_data = self.__db_person.get_in_invoke(farmer_key.encode())
@@ -60,6 +59,7 @@ class SCOREBusinessLogic:
         farmer["binded_token"] += contract["reward"]
 
         farmer_value = json.dumps(farmer)
+        contract_value = json.dumps(contract)
 
         farmer_response = self.put_to_db(self.__db_person,farmer_key, farmer_value)
         contract_response = self.put_to_db(self.__db_contract,contract_key,contract_value)
@@ -71,7 +71,7 @@ class SCOREBusinessLogic:
 
     def invoke_done(self, log_func, id, params: dict, block=None):
         contract_key = params["key"]
-        done_contract = json.loads(params["value"])
+        done_contract = params["value"]
 
         contract = json.loads(self.__db_contract.get_in_invoke(contract_key.encode()))
         contract["fulfillment"] = done_contract
@@ -153,7 +153,12 @@ class SCOREBusinessLogic:
 
     def invoke_purchase_token(self, log_func, id, params: dict, block=None):
         key = params["key"]
-        purchasing_amount = int(params["purchasing_amount"])
+        purchasing_amount = int(params["purchase_token"])
+
+        print(params["purchase_token"])
+        print(type(params["purchase_token"]))
+        print(purchasing_amount)
+        print(type(purchasing_amount))
 
         person = json.loads(self.__db_person.get_in_invoke(key.encode()))
         person["token"] += purchasing_amount
@@ -167,6 +172,8 @@ class SCOREBusinessLogic:
         spending_amount = int(params["spending_amount"])
 
         person = json.loads(self.__db_person.get_in_invoke(key.encode()))
+        if person["token"] < spending_amount:
+            return SCOREResponse.exception("not enough token")
         person["token"] -= spending_amount
 
         value = json.dumps(person)
@@ -203,7 +210,7 @@ class SCOREBusinessLogic:
         key = params["key"]
 
         try:
-            data = self.__db__contract.get_in_query(key.encode())
+            data = self.__db_contract.get_in_query(key.encode())
 
             result = {"data": data.decode("utf-8")}
             log_func('Queried data: {result}')
@@ -219,7 +226,7 @@ class SCOREBusinessLogic:
         key = params["key"]
 
         try:
-            data = self.__db__person.get_in_query(key.encode())
+            data = self.__db_person.get_in_query(key.encode())
 
             result = {"data": data.decode("utf-8")}
             log_func('Queried data: {result}')
