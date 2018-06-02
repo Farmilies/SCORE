@@ -33,18 +33,17 @@ class SCOREBusinessLogic:
     """
 
     # User can use several DB instances.
-    __db = None
     __db_contract = None
     __db_person = None
 
     def __init__(self):
         # User can use several DB instances.
-        self.__db = ScoreHelperDatabase("MY_OWN_DB", ScoreHelper())
         self.__db_contract = ScoreHelperDatabase("Contract", ScoreHelper())
         self.__db_person = ScoreHelperDatabase("Person", ScoreHelper())
 
 
     def invoke_contract(self, log_func, id, params: dict, block=None):
+        print("invoke_contract start")
         contract_key = params["key"]
         contract = params["value"]
         farmer_key = contract["farmer"]
@@ -64,12 +63,14 @@ class SCOREBusinessLogic:
         farmer_response = self.put_to_db(self.__db_person,farmer_key, farmer_value)
         contract_response = self.put_to_db(self.__db_contract,contract_key,contract_value)
 
+        print("invoke_contract end")
         if farmer_response["code"] == 0 and contract_response["code"] == 0:
             return SCOREResponse.succeed()
         else:
             return SCOREResponse.exception("exception while writing db")
 
     def invoke_done(self, log_func, id, params: dict, block=None):
+        print("invoke_done start")
         contract_key = params["key"]
         done_contract = params["value"]
 
@@ -95,12 +96,14 @@ class SCOREBusinessLogic:
         citizen_response = self.put_to_db(self.__db_person, citizen_key, citizen_value)
         contract_response = self.put_to_db(self.__db_contract, contract_key, contract_value)
 
+        print("invoke_done end")
         if farmer_response["code"] == 0 and citizen_response["code"] == 0 and contract_response["code"] == 0:
             return SCOREResponse.succeed()
         else:
             return SCOREResponse.exception("exception while writing db")
 
     def invoke_cancel(self, log_func, id, params: dict, block=None):
+        print("invoke_cancel start")
         contract_key = params["key"]
         canceled_contract = params["value"]
 
@@ -120,12 +123,14 @@ class SCOREBusinessLogic:
         farmer_response = self.put_to_db(self.__db_person, farmer_key, farmer_value)
         contract_response = self.put_to_db(self.__db_contract, contract_key, contract_value)
 
+        print("invoke_cancel end")
         if farmer_response["code"] == 0 and contract_response["code"] == 0:
             return SCOREResponse.succeed()
         else:
             return SCOREResponse.exception("exception while writing db")
 
     def invoke_person(self, log_func, id, params: dict, block=None):
+        print("invoke_person start")
         key = params["key"]
 
         person = {}
@@ -136,10 +141,12 @@ class SCOREBusinessLogic:
 
         value = json.dumps(person)
 
+        print("invoke_person end")
         return self.put_to_db(self.__db_person, key, value)
 
 
     def invoke_rating(self, log_func, id, params: dict, block=None):
+        print("invoke_rating start")
         key = params["key"]
         rating = params["rating"]
 
@@ -149,11 +156,13 @@ class SCOREBusinessLogic:
 
         value = json.dumps(person)
 
+        print("invoke_rating end")
         return self.put_to_db(self.__db_person, key, value)
 
     def invoke_purchase_token(self, log_func, id, params: dict, block=None):
+        print("invoke_purchase_token start")
         key = params["key"]
-        purchasing_amount = int(params["purchase_token"])
+        purchasing_amount = params["purchase_token"]
 
         print(params["purchase_token"])
         print(type(params["purchase_token"]))
@@ -165,11 +174,13 @@ class SCOREBusinessLogic:
 
         value = json.dumps(person)
 
+        print("invoke_purchase_token end")
         return self.put_to_db(self.__db_person, key, value)
 
     def invoke_spend_token(self, log_func, id, params: dict, block=None):
+        print("invoke_spend_token start")
         key = params["key"]
-        spending_amount = int(params["spending_amount"])
+        spending_amount = params["spending_amount"]
 
         person = json.loads(self.__db_person.get_in_invoke(key.encode()))
         if person["token"] < spending_amount:
@@ -178,9 +189,11 @@ class SCOREBusinessLogic:
 
         value = json.dumps(person)
 
+        print("invoke_spend_token end")
         return self.put_to_db(self.__db_person, key, value)
 
     def put_to_db(self, db, key, value):
+        print("put_to_db start")
         try:
             # Store string as value. And key and value must be BYTE type, not only string or object.
             db.put(key.encode(), value.encode())
@@ -207,6 +220,7 @@ class SCOREBusinessLogic:
 
 
     def query_contract(self, log_func, id, params):
+        print("query_contract start")
         key = params["key"]
 
         try:
@@ -214,6 +228,7 @@ class SCOREBusinessLogic:
 
             result = {"data": data.decode("utf-8")}
             log_func('Queried data: {result}')
+            print("query_contract end")
             return SCOREResponse.succeed("Succeed to query.", result)
 
         except TypeError:
@@ -223,6 +238,7 @@ class SCOREBusinessLogic:
             return SCOREResponse.exception("DB do not Have such a key.")
 
     def query_person(self, log_func, id, params):
+        print("query_person start")
         key = params["key"]
 
         try:
@@ -230,6 +246,7 @@ class SCOREBusinessLogic:
 
             result = {"data": data.decode("utf-8")}
             log_func('Queried data: {result}')
+            print("query_person end")
             return SCOREResponse.succeed("Succeed to query.", result)
 
         except TypeError:
